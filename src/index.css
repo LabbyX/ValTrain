@@ -1,0 +1,118 @@
+:root {
+  --vt-bg-deep: #0a0e14;
+  --vt-bg: #0f1419;
+  --vt-bg-elevated: #161c24;
+  --vt-surface: #1a222d;
+  --vt-border: rgba(255, 70, 86, 0.22);
+  --vt-accent: #ff4656;
+  --vt-accent-dim: rgba(255, 70, 86, 0.35);
+  --vt-accent-glow: rgba(255, 70, 86, 0.45);
+  --vt-teal: #0fffd5;
+  --vt-text: #ece8e1;
+  --vt-text-muted: #8b949e;
+  --vt-success: #3ecf8e;
+  --vt-warning: #f0b429;
+  --vt-grid: rgba(255, 255, 255, 0.04);
+  --vt-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --vt-font-display: 'Rajdhani', system-ui, sans-serif;
+  --vt-font-body: 'Inter', system-ui, sans-serif;
+}
+
+[data-theme='light'] {
+  --vt-bg-deep: #e8ecf1;
+  --vt-bg: #f0f3f7;
+  --vt-bg-elevated: #ffffff;
+  --vt-surface: #ffffff;
+  --vt-border: rgba(255, 70, 86, 0.28);
+  --vt-text: #1a1f26;
+  --vt-text-muted: #5c6570;
+  --vt-grid: rgba(0, 0, 0, 0.06);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark light;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--vt-font-body);
+  background: var(--vt-bg-deep);
+  color: var(--vt-text);
+  transition: background-color var(--vt-transition), color var(--vt-transition);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.vt-bg-pattern {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, var(--vt-accent-glow), transparent 55%),
+    radial-gradient(ellipse 80% 50% at 100% 50%, rgba(15, 255, 213, 0.06), transparent),
+    linear-gradient(180deg, var(--vt-bg-deep) 0%, var(--vt-bg) 40%, var(--vt-bg-deep) 100%);
+  pointer-events: none;
+}
+
+.vt-bg-pattern::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--vt-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--vt-grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent);
+  opacity: 0.85;
+}
+
+[data-theme='light'] .vt-bg-pattern {
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -15%, rgba(255, 70, 86, 0.18), transparent 50%),
+    radial-gradient(ellipse 80% 50% at 100% 40%, rgba(15, 255, 213, 0.08), transparent),
+    linear-gradient(180deg, var(--vt-bg-deep), var(--vt-bg));
+}
+
+button {
+  font-family: inherit;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Page enter animation */
+.vt-page-enter {
+  animation: vtFadeUp 0.45s var(--vt-transition) both;
+}
+
+@keyframes vtFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
