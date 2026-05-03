@@ -1,4 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { RANKED_MAPS } from '../data/valorant'
 import { db, dateKeyFromTs, type RankedMatchRow } from '../db/database'
 import { matchOutcome, scoreOutcomeClass } from '../utils/matchScore'
@@ -92,6 +101,26 @@ export function RankedPage() {
       return true
     })
   }, [history, filterFrom, filterTo])
+
+  const rankedStockRows = useMemo(() => {
+    const ordered = [...filteredHist].reverse()
+    let equity = 100
+    return ordered.map((h, idx) => {
+      const out = matchOutcome(h.scoreLeft, h.scoreRight)
+      const kd = h.deaths === 0 ? (h.kills > 0 ? 2 : 1) : h.kills / h.deaths
+      // "Биржевой" индекс формы: исход + небольшой вклад K/D
+      const delta =
+        (out === 'win' ? 4 : out === 'loss' ? -4 : out === 'draw' ? 1 : 0) +
+        Math.max(-2.5, Math.min(2.5, (kd - 1) * 2))
+      equity = Math.max(20, Math.round((equity + delta) * 10) / 10)
+      return {
+        n: idx + 1,
+        equity,
+        dateKey: h.dateKey,
+        map: h.mapId,
+      }
+    })
+  }, [filteredHist])
 
   const mapName = (id: string) => RANKED_MAPS.find((m) => m.id === id)?.name ?? id
 
@@ -282,6 +311,45 @@ export function RankedPage() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="vt-section vt-card">
+        <h2 className="vt-card-title">Динамика рейтинга (как график биржи)</h2>
+        <p className="vt-card-desc">
+          Линия строится по матчам в хронологическом порядке: победы и высокий K/D поднимают индекс,
+          поражения опускают. Нужны записи в истории.
+        </p>
+        {rankedStockRows.length === 0 ? (
+          <p className="vt-muted">Добавьте рейтинговые матчи — здесь появится линия динамики.</p>
+        ) : (
+          <div style={{ width: '100%', height: 300 }}>
+            <ResponsiveContainer>
+              <LineChart data={rankedStockRows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+                <XAxis dataKey="n" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} domain={['dataMin - 5', 'dataMax + 5']} />
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--vt-bg-elevated)',
+                    border: '1px solid var(--vt-border)',
+                    borderRadius: 8,
+                  }}
+                  formatter={(v: number) => [v.toFixed(1), 'Индекс']}
+                  labelFormatter={(n) => `Матч #${n}`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="equity"
+                  name="Рейтинговый индекс"
+                  stroke="var(--vt-brand)"
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </section>
 
       <section className="vt-section vt-card">
