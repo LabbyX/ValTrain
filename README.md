@@ -17,6 +17,92 @@
 
 ---
 
+## Схема работы (IDEF-подобная декомпозиция)
+
+Ниже — двухуровневая логика в духе **IDEF0**: сначала контекст «кто с чем взаимодействует», затем разбиение приложения на навигацию, экраны, визуализацию и хранение данных. Диаграммы на [Mermaid](https://mermaid.js.org/) — на GitHub они отображаются прямо в файле.
+
+### Уровень A-0: контекст системы
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#1a222d','primaryTextColor':'#ece8e1','primaryBorderColor':'#ff4656','lineColor':'#8b949e','secondaryColor':'#161c24','tertiaryColor':'#0f1419'}}}%%
+flowchart LR
+  classDef actor fill:#ff465633,stroke:#ff4656,stroke-width:2px,color:#ece8e1
+  classDef system fill:#161c24,stroke:#0fffd5,stroke-width:2px,color:#ece8e1
+  classDef store fill:#0f1419,stroke:#ff4656,stroke-width:2px,color:#ece8e1
+
+  U([Игрок]):::actor
+  V[[ValTrain<br/>SPA в браузере]]:::system
+  L[(Локальные данные<br/>IndexedDB)]:::store
+  F[/Картинки карт<br/>public/img/]:::system
+
+  U <-->|UI · ввод и просмотр| V
+  V <-->|чтение и запись| L
+  V -->|загрузка превью| F
+```
+
+### Уровень A1: декомпозиция приложения
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#1a222d','primaryTextColor':'#ece8e1','primaryBorderColor':'#ff4656','lineColor':'#8b949e','secondaryColor':'#161c24','tertiaryColor':'#0f1419'}}}%%
+flowchart TB
+  classDef shell fill:#161c24,stroke:#ff4656,color:#ece8e1
+  classDef page fill:#1a222d,stroke:#0fffd5,color:#ece8e1
+  classDef data fill:#0f1419,stroke:#ff4656,color:#ece8e1
+  classDef lib fill:#161c24,stroke:#8b949e,color:#ece8e1
+
+  subgraph nav["Оболочка и навигация"]
+    RR[React Router]:::shell
+    LO[Layout · тема светлая/тёмная]:::shell
+  end
+
+  subgraph screens["Экраны"]
+    PG1[Главная · hub]:::page
+    PG2[Тренировка · журнал и графики]:::page
+    PG3[Настройки мыши · DPI и сенса]:::page
+    PG4[Рейтинговые · карты и счёт]:::page
+    PG5[Общий итог · сводка и советы]:::page
+  end
+
+  subgraph viz["Визуализация"]
+    CH[Recharts · линии и столбцы]:::lib
+  end
+
+  subgraph persist["Персистентность"]
+    DX[Dexie.js · ORM поверх IndexedDB]:::data
+    TB1[(training)]:::data
+    TB2[(settings)]:::data
+    TB3[(ranked)]:::data
+    DX --> TB1 & TB2 & TB3
+  end
+
+  RR --> LO
+  LO --> PG1 & PG2 & PG3 & PG4 & PG5
+  PG2 --> CH
+  PG5 --> CH
+  PG1 & PG2 & PG3 & PG4 & PG5 --> DX
+```
+
+### Поток данных при сохранении записи
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#1a222d','primaryTextColor':'#ece8e1','primaryBorderColor':'#ff4656','lineColor':'#8b949e'}}}%%
+sequenceDiagram
+  autonumber
+  participant U as Пользователь
+  participant P as Страница React
+  participant D as Dexie
+  participant I as IndexedDB
+
+  U->>P: Заполняет форму и сохраняет
+  P->>D: put / add объект записи
+  D->>I: транзакция в таблицу
+  I-->>D: OK
+  D-->>P: подтверждение
+  P-->>U: Обновлённый журнал и графики
+```
+
+---
+
 ## Быстрый старт
 
 Требуется **Node.js** 18+ и npm.
