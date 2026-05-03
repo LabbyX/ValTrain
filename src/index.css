@@ -1,32 +1,46 @@
 :root {
-  --vt-bg-deep: #0a0e14;
-  --vt-bg: #0f1419;
-  --vt-bg-elevated: #161c24;
-  --vt-surface: #1a222d;
-  --vt-border: rgba(255, 70, 86, 0.22);
-  --vt-accent: #ff4656;
-  --vt-accent-dim: rgba(255, 70, 86, 0.35);
-  --vt-accent-glow: rgba(255, 70, 86, 0.45);
-  --vt-teal: #0fffd5;
-  --vt-text: #ece8e1;
-  --vt-text-muted: #8b949e;
-  --vt-success: #3ecf8e;
-  --vt-warning: #f0b429;
-  --vt-grid: rgba(255, 255, 255, 0.04);
-  --vt-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  --vt-font-display: 'Rajdhani', system-ui, sans-serif;
+  /* Палитра в духе vite.dev: фиолет + изумруд */
+  --vt-bg-deep: #0b0f1a;
+  --vt-bg: #111827;
+  --vt-bg-elevated: #151d2e;
+  --vt-surface: rgba(21, 29, 46, 0.72);
+  --vt-border: rgba(116, 123, 255, 0.22);
+  --vt-brand: #747bff;
+  --vt-brand-mid: #a78bfa;
+  --vt-brand-2: #42d392;
+  --vt-brand-glow: rgba(116, 123, 255, 0.5);
+  --vt-brand-glow-2: rgba(66, 211, 146, 0.35);
+  /* Совместимость со старыми именами */
+  --vt-accent: var(--vt-brand);
+  --vt-accent-dim: rgba(116, 123, 255, 0.35);
+  --vt-accent-glow: var(--vt-brand-glow);
+  --vt-teal: var(--vt-brand-2);
+  --vt-text: #e8ecf4;
+  --vt-text-muted: #9ca3c4;
+  --vt-success: #34d399;
+  --vt-warning: #fbbf24;
+  --vt-danger: #ff4656;
+  --vt-grid: rgba(255, 255, 255, 0.035);
+  --vt-transition: 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  --vt-font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
   --vt-font-body: 'Inter', system-ui, sans-serif;
+  --vt-glass: rgba(15, 23, 42, 0.65);
+  --vt-radius-lg: 16px;
 }
 
 [data-theme='light'] {
-  --vt-bg-deep: #e8ecf1;
-  --vt-bg: #f0f3f7;
+  --vt-bg-deep: #f8fafc;
+  --vt-bg: #f1f5f9;
   --vt-bg-elevated: #ffffff;
-  --vt-surface: #ffffff;
-  --vt-border: rgba(255, 70, 86, 0.28);
-  --vt-text: #1a1f26;
-  --vt-text-muted: #5c6570;
-  --vt-grid: rgba(0, 0, 0, 0.06);
+  --vt-surface: rgba(255, 255, 255, 0.82);
+  --vt-border: rgba(79, 70, 229, 0.18);
+  --vt-brand-glow: rgba(79, 70, 229, 0.28);
+  --vt-brand-glow-2: rgba(16, 185, 129, 0.22);
+  --vt-accent-dim: rgba(79, 70, 229, 0.2);
+  --vt-text: #0f172a;
+  --vt-text-muted: #64748b;
+  --vt-grid: rgba(15, 23, 42, 0.06);
+  --vt-glass: rgba(255, 255, 255, 0.72);
 }
 
 *,
@@ -53,41 +67,140 @@ body {
   font-family: var(--vt-font-body);
   background: var(--vt-bg-deep);
   color: var(--vt-text);
-  transition: background-color var(--vt-transition), color var(--vt-transition);
+  transition:
+    background-color var(--vt-transition),
+    color var(--vt-transition);
 }
 
 #root {
   min-height: 100vh;
 }
 
+/* ─── Фон в стиле лендингов Vite: сетка + световые пятна ─── */
 .vt-bg-pattern {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(ellipse 120% 80% at 50% -20%, var(--vt-accent-glow), transparent 55%),
-    radial-gradient(ellipse 80% 50% at 100% 50%, rgba(15, 255, 213, 0.06), transparent),
-    linear-gradient(180deg, var(--vt-bg-deep) 0%, var(--vt-bg) 40%, var(--vt-bg-deep) 100%);
+  overflow: hidden;
   pointer-events: none;
+  background: radial-gradient(ellipse 100% 80% at 50% -30%, var(--vt-brand-glow-2), transparent 52%),
+    radial-gradient(ellipse 70% 50% at 100% 20%, var(--vt-brand-glow), transparent 45%),
+    linear-gradient(180deg, var(--vt-bg-deep) 0%, var(--vt-bg) 45%, var(--vt-bg-deep) 100%);
 }
 
-.vt-bg-pattern::before {
+.vt-bg-pattern::after {
   content: '';
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(var(--vt-grid) 1px, transparent 1px),
+  background-image: linear-gradient(var(--vt-grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--vt-grid) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent);
-  opacity: 0.85;
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 35%, black 15%, transparent 70%);
+  opacity: 0.9;
+  animation: vtGridDrift 80s linear infinite;
 }
 
 [data-theme='light'] .vt-bg-pattern {
-  background:
-    radial-gradient(ellipse 120% 80% at 50% -15%, rgba(255, 70, 86, 0.18), transparent 50%),
-    radial-gradient(ellipse 80% 50% at 100% 40%, rgba(15, 255, 213, 0.08), transparent),
+  background: radial-gradient(ellipse 90% 70% at 50% -25%, var(--vt-brand-glow-2), transparent 50%),
+    radial-gradient(ellipse 60% 45% at 100% 15%, var(--vt-brand-glow), transparent 42%),
     linear-gradient(180deg, var(--vt-bg-deep), var(--vt-bg));
+}
+
+@keyframes vtGridDrift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(56px, 56px, 0);
+  }
+}
+
+.vt-bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.vt-bg-orb--1 {
+  width: clamp(280px, 55vw, 560px);
+  height: clamp(280px, 55vw, 560px);
+  background: radial-gradient(circle at 30% 30%, var(--vt-brand), transparent 68%);
+  opacity: 0.42;
+  top: -12%;
+  left: -18%;
+  animation: vtOrbA 22s ease-in-out infinite;
+}
+
+.vt-bg-orb--2 {
+  width: clamp(240px, 45vw, 480px);
+  height: clamp(240px, 45vw, 480px);
+  background: radial-gradient(circle at 70% 70%, var(--vt-brand-2), transparent 65%);
+  opacity: 0.38;
+  bottom: -8%;
+  right: -12%;
+  animation: vtOrbB 26s ease-in-out infinite;
+}
+
+.vt-bg-orb--3 {
+  width: clamp(200px, 40vw, 400px);
+  height: clamp(200px, 40vw, 400px);
+  background: radial-gradient(circle at 50% 50%, var(--vt-brand-mid), transparent 62%);
+  opacity: 0.22;
+  top: 42%;
+  left: 38%;
+  animation: vtOrbC 19s ease-in-out infinite;
+}
+
+@keyframes vtOrbA {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  40% {
+    transform: translate3d(6vw, 4vh, 0) scale(1.06);
+  }
+  70% {
+    transform: translate3d(-2vw, 8vh, 0) scale(0.96);
+  }
+}
+
+@keyframes vtOrbB {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-5vw, -5vh, 0) scale(1.1);
+  }
+}
+
+@keyframes vtOrbC {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate3d(-4vw, 3vh, 0) rotate(8deg);
+  }
+  66% {
+    transform: translate3d(5vw, -2vh, 0) rotate(-6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vt-bg-pattern::after {
+    animation: none;
+  }
+  .vt-bg-orb--1,
+  .vt-bg-orb--2,
+  .vt-bg-orb--3 {
+    animation: none;
+  }
+  .vt-page-enter {
+    animation: none !important;
+  }
 }
 
 button {
@@ -101,15 +214,61 @@ textarea {
   color: inherit;
 }
 
-/* Page enter animation */
+/* Градиентный логотип / заголовок */
+.vt-gradient-heading {
+  background: linear-gradient(
+    105deg,
+    var(--vt-brand) 0%,
+    var(--vt-brand-mid) 35%,
+    var(--vt-brand-2) 65%,
+    var(--vt-brand) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: vtGradientFlow 8s ease infinite;
+}
+
+[data-theme='light'] .vt-gradient-heading {
+  background: linear-gradient(
+    105deg,
+    #4f46e5 0%,
+    #7c3aed 40%,
+    #059669 70%,
+    #4f46e5 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes vtGradientFlow {
+  0%,
+  100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vt-gradient-heading {
+    animation: none;
+    background-position: 50% center;
+  }
+}
+
 .vt-page-enter {
-  animation: vtFadeUp 0.45s var(--vt-transition) both;
+  animation: vtFadeUp 0.55s var(--vt-transition) both;
 }
 
 @keyframes vtFadeUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;

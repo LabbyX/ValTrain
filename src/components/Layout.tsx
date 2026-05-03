@@ -14,13 +14,17 @@ export function Layout() {
 
   return (
     <>
-      <div className="vt-bg-pattern" aria-hidden />
+      <div className="vt-bg-pattern" aria-hidden>
+        <div className="vt-bg-orb vt-bg-orb--1" />
+        <div className="vt-bg-orb vt-bg-orb--2" />
+        <div className="vt-bg-orb vt-bg-orb--3" />
+      </div>
       <div className="vt-shell">
         <header className="vt-header">
           <div className="vt-brand">
             <span className="vt-brand-mark" />
             <div>
-              <h1 className="vt-brand-title">ValTrain</h1>
+              <h1 className="vt-brand-title vt-gradient-heading">ValTrain</h1>
               <p className="vt-brand-sub">Журнал тренировок Valorant</p>
             </div>
           </div>
