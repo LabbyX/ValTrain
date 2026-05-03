@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
 import { db, getOrCreateSettings, type MouseSettings } from '../db/database'
 
+function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n))
+}
+
 function Slider({
   label,
   value,
   min,
   max,
   step,
-  format,
+  inputStep,
   onChange,
 }: {
   label: string
@@ -15,7 +19,8 @@ function Slider({
   min: number
   max: number
   step: number
-  format: (v: number) => string
+  /** Шаг для поля ввода (может отличаться от слайдера) */
+  inputStep?: string
   onChange: (v: number) => void
 }) {
   return (
@@ -24,7 +29,20 @@ function Slider({
         <label className="vt-label" style={{ marginBottom: 0 }}>
           {label}
         </label>
-        <span className="vt-slider-value">{format(value)}</span>
+        <input
+          type="number"
+          className="vt-slider-manual"
+          min={min}
+          max={max}
+          step={inputStep ?? step}
+          value={value}
+          aria-label={`${label} — точное значение`}
+          onChange={(e) => {
+            const n = parseFloat(e.target.value)
+            if (Number.isNaN(n)) return
+            onChange(clamp(n, min, max))
+          }}
+        />
       </div>
       <input
         className="vt-slider"
@@ -62,7 +80,8 @@ export function SettingsPage() {
     <div className="vt-card vt-page-enter">
       <h2 className="vt-card-title">Настройки мыши и прицела</h2>
       <p className="vt-card-desc">
-        Ползунки сохраняются в локальной базе. Подписи соответствуют пунктам Valorant на русском.
+        Справа у каждого параметра поле для точного ввода с клавиатуры; слайдер дублирует значение. Всё
+        сохраняется в локальной базе.
       </p>
 
       <Slider
@@ -70,8 +89,8 @@ export function SettingsPage() {
         min={400}
         max={3200}
         step={50}
+        inputStep="1"
         value={s.dpi}
-        format={(v) => `${v} DPI`}
         onChange={(dpi) => void persist({ ...s, dpi })}
       />
 
@@ -80,8 +99,8 @@ export function SettingsPage() {
         min={0.1}
         max={2}
         step={0.01}
+        inputStep="0.01"
         value={s.sensitivityAim}
-        format={(v) => v.toFixed(2)}
         onChange={(sensitivityAim) => void persist({ ...s, sensitivityAim })}
       />
 
@@ -90,8 +109,8 @@ export function SettingsPage() {
         min={0.5}
         max={2}
         step={0.05}
+        inputStep="0.01"
         value={s.scopedSensitivityMultiplier}
-        format={(v) => `${v.toFixed(2)}×`}
         onChange={(scopedSensitivityMultiplier) => void persist({ ...s, scopedSensitivityMultiplier })}
       />
 
@@ -100,8 +119,8 @@ export function SettingsPage() {
         min={0.5}
         max={2}
         step={0.05}
+        inputStep="0.01"
         value={s.adsSensitivityMultiplier}
-        format={(v) => `${v.toFixed(2)}×`}
         onChange={(adsSensitivityMultiplier) => void persist({ ...s, adsSensitivityMultiplier })}
       />
 

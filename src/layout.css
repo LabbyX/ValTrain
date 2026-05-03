@@ -316,7 +316,8 @@
 .vt-slider-head {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  gap: 0.75rem;
   margin-bottom: 0.35rem;
 }
 
@@ -324,6 +325,82 @@
   font-family: var(--vt-font-display);
   font-weight: 700;
   color: var(--vt-accent);
+}
+
+.vt-slider-manual {
+  flex-shrink: 0;
+  width: 5.25rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--vt-border);
+  background: var(--vt-bg-elevated);
+  font-family: var(--vt-font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+  color: var(--vt-text);
+}
+
+.vt-slider-manual:focus {
+  outline: none;
+  border-color: var(--vt-accent);
+  box-shadow: 0 0 0 2px var(--vt-accent-dim);
+}
+
+/* Счёт матча: зелёный победа, красный поражение, жёлтый ничья */
+.vt-score-cell {
+  vertical-align: middle;
+}
+
+.vt-score-cell-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  font-family: var(--vt-font-display);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.vt-score-cell input.vt-score-input {
+  width: 3rem;
+  padding: 0.3rem 0.35rem;
+  border-radius: 6px;
+  border: 1px solid var(--vt-border);
+  background: var(--vt-bg-elevated);
+  font-family: var(--vt-font-display);
+  font-weight: 700;
+  text-align: center;
+}
+
+.vt-score-cell--win .vt-score-cell-inner {
+  background: rgba(62, 207, 142, 0.22);
+  color: var(--vt-success);
+  box-shadow: inset 0 0 0 1px rgba(62, 207, 142, 0.45);
+}
+
+.vt-score-cell--loss .vt-score-cell-inner {
+  background: rgba(255, 70, 86, 0.18);
+  color: var(--vt-accent);
+  box-shadow: inset 0 0 0 1px rgba(255, 70, 86, 0.35);
+}
+
+.vt-score-cell--draw .vt-score-cell-inner {
+  background: rgba(240, 180, 41, 0.2);
+  color: var(--vt-warning);
+  box-shadow: inset 0 0 0 1px rgba(240, 180, 41, 0.45);
+}
+
+.vt-score-cell--empty .vt-score-cell-inner {
+  background: var(--vt-bg-elevated);
+  color: var(--vt-text-muted);
+  box-shadow: inset 0 0 0 1px var(--vt-border);
+}
+
+.vt-score-sep {
+  opacity: 0.65;
+  font-weight: 700;
 }
 
 .vt-slider {

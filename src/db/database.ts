@@ -56,6 +56,9 @@ export interface RankedMatchRow {
   kills: number
   deaths: number
   assists: number
+  /** Счёт «мы : они» (слева ваша команда). Оба нужны для подсветки исхода */
+  scoreLeft?: number
+  scoreRight?: number
 }
 
 class ValTrainDB extends Dexie {

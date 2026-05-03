@@ -8,6 +8,7 @@ import {
 } from '../db/database'
 import { RANKED_MAPS } from '../data/valorant'
 import { TrainingCharts, trainingInsights } from '../components/TrainingCharts'
+import { matchOutcome } from '../utils/matchScore'
 
 function inRange(dateKey: string, from: string, to: string) {
   if (from && dateKey < from) return false
@@ -64,6 +65,15 @@ export function SummaryPage() {
       byMap.set(r.mapId, cur)
     }
     const kd = d === 0 ? (k > 0 ? Number.POSITIVE_INFINITY : null) : k / d
+    let wins = 0,
+      losses = 0,
+      draws = 0
+    for (const r of rkF) {
+      const o = matchOutcome(r.scoreLeft, r.scoreRight)
+      if (o === 'win') wins++
+      else if (o === 'loss') losses++
+      else if (o === 'draw') draws++
+    }
     const mapsWorst = [...byMap.entries()]
       .filter(([, v]) => v.d > 0)
       .map(([id, v]) => ({
@@ -73,7 +83,7 @@ export function SummaryPage() {
         name: RANKED_MAPS.find((m) => m.id === id)?.name ?? id,
       }))
       .sort((x, y) => x.kd - y.kd)
-    return { k, d, a, kd, mapsWorst }
+    return { k, d, a, kd, mapsWorst, wins, losses, draws }
   }, [rkF])
 
   const dmAgg = useMemo(() => {
@@ -212,6 +222,17 @@ export function SummaryPage() {
             </div>
             <p className="vt-muted" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem' }}>
               K/D: {kdFmt(rankedAgg.kd)} · Помощи: {rankedAgg.a}
+              {(rankedAgg.wins > 0 || rankedAgg.losses > 0 || rankedAgg.draws > 0) && (
+                <>
+                  <br />
+                  По счёту:{' '}
+                  <span style={{ color: 'var(--vt-success)' }}>В {rankedAgg.wins}</span>
+                  {' · '}
+                  <span style={{ color: 'var(--vt-accent)' }}>П {rankedAgg.losses}</span>
+                  {' · '}
+                  <span style={{ color: 'var(--vt-warning)' }}>Н {rankedAgg.draws}</span>
+                </>
+              )}
             </p>
           </div>
         </div>

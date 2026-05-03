@@ -1,13 +1,37 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { RANKED_MAPS } from '../data/valorant'
 import { db, dateKeyFromTs, type RankedMatchRow } from '../db/database'
+import { matchOutcome, scoreOutcomeClass } from '../utils/matchScore'
 
-type Draft = { mapId: string; kills: number; deaths: number; assists: number }
+const SCORE_MAX = 30
+
+type Draft = {
+  mapId: string
+  kills: number
+  deaths: number
+  assists: number
+  scoreLeft: number | null
+  scoreRight: number | null
+}
+
+function parseScore(raw: string): number | null {
+  if (raw.trim() === '') return null
+  const n = Number(raw)
+  if (Number.isNaN(n) || n < 0) return null
+  return Math.min(SCORE_MAX, Math.floor(n))
+}
 
 export function RankedPage() {
   const [selectedMap, setSelectedMap] = useState<string>(RANKED_MAPS[0].id)
   const [drafts, setDrafts] = useState<Draft[]>([
-    { mapId: RANKED_MAPS[0].id, kills: 18, deaths: 15, assists: 4 },
+    {
+      mapId: RANKED_MAPS[0].id,
+      kills: 18,
+      deaths: 15,
+      assists: 4,
+      scoreLeft: null,
+      scoreRight: null,
+    },
   ])
   const [history, setHistory] = useState<RankedMatchRow[]>([])
   const [filterFrom, setFilterFrom] = useState('')
@@ -23,7 +47,10 @@ export function RankedPage() {
   }, [reload])
 
   const addRow = () =>
-    setDrafts((d) => [...d, { mapId: selectedMap, kills: 0, deaths: 0, assists: 0 }])
+    setDrafts((d) => [
+      ...d,
+      { mapId: selectedMap, kills: 0, deaths: 0, assists: 0, scoreLeft: null, scoreRight: null },
+    ])
 
   const batchKd = useMemo(() => {
     let k = 0,
@@ -41,14 +68,19 @@ export function RankedPage() {
     const ts = Date.now()
     const dk = dateKeyFromTs(ts)
     for (const r of drafts) {
-      await db.ranked.add({
+      const row: Omit<RankedMatchRow, 'id'> = {
         createdAt: ts,
         dateKey: dk,
         mapId: r.mapId,
         kills: r.kills,
         deaths: r.deaths,
         assists: r.assists,
-      })
+      }
+      if (r.scoreLeft != null && r.scoreRight != null) {
+        row.scoreLeft = r.scoreLeft
+        row.scoreRight = r.scoreRight
+      }
+      await db.ranked.add(row)
     }
     void reload()
   }
@@ -90,8 +122,8 @@ export function RankedPage() {
       <section className="vt-section vt-card">
         <h2 className="vt-card-title">Несколько игр подряд</h2>
         <p className="vt-card-desc">
-          Добавляйте строки с убийствами, смертями и помощью. Средний K/D по текущему списку
-          пересчитывается сразу.
+          K/D/A, счёт матча слева «мы», справа «соперники»: больше слева — победа (зелёный), меньше —
+          поражение (красный), равные — ничья (жёлтый). Если счёт не указать, подсветки не будет.
         </p>
 
         <div className="vt-row" style={{ marginBottom: '1rem', alignItems: 'center' }}>
@@ -120,6 +152,7 @@ export function RankedPage() {
             <thead>
               <tr>
                 <th>Карта</th>
+                <th>Счёт</th>
                 <th>K</th>
                 <th>D</th>
                 <th>A</th>
@@ -130,6 +163,8 @@ export function RankedPage() {
             <tbody>
               {drafts.map((row, i) => {
                 const kd = row.deaths === 0 ? (row.kills > 0 ? '∞' : '—') : (row.kills / row.deaths).toFixed(2)
+                const oc = matchOutcome(row.scoreLeft, row.scoreRight)
+                const scoreClass = scoreOutcomeClass(oc)
                 return (
                   <tr key={i}>
                     <td>
@@ -149,6 +184,41 @@ export function RankedPage() {
                           </option>
                         ))}
                       </select>
+                    </td>
+                    <td className={scoreClass}>
+                      <div className="vt-score-cell-inner">
+                        <input
+                          className="vt-score-input"
+                          type="number"
+                          min={0}
+                          max={SCORE_MAX}
+                          placeholder="—"
+                          value={row.scoreLeft ?? ''}
+                          aria-label="Наши раунды"
+                          onChange={(e) => {
+                            const v = parseScore(e.target.value)
+                            setDrafts((prev) =>
+                              prev.map((x, j) => (j === i ? { ...x, scoreLeft: v } : x)),
+                            )
+                          }}
+                        />
+                        <span className="vt-score-sep">:</span>
+                        <input
+                          className="vt-score-input"
+                          type="number"
+                          min={0}
+                          max={SCORE_MAX}
+                          placeholder="—"
+                          value={row.scoreRight ?? ''}
+                          aria-label="Раунды соперника"
+                          onChange={(e) => {
+                            const v = parseScore(e.target.value)
+                            setDrafts((prev) =>
+                              prev.map((x, j) => (j === i ? { ...x, scoreRight: v } : x)),
+                            )
+                          }}
+                        />
+                      </div>
                     </td>
                     <td>
                       <input
@@ -232,6 +302,7 @@ export function RankedPage() {
               <tr>
                 <th>Дата</th>
                 <th>Карта</th>
+                <th>Счёт</th>
                 <th>K / D / A</th>
                 <th>K/D</th>
                 <th />
@@ -240,10 +311,26 @@ export function RankedPage() {
             <tbody>
               {filteredHist.map((h) => {
                 const kd = h.deaths === 0 ? (h.kills > 0 ? '∞' : '—') : (h.kills / h.deaths).toFixed(2)
+                const oc = matchOutcome(h.scoreLeft, h.scoreRight)
+                const scoreClass = scoreOutcomeClass(oc)
+                const hasScore = h.scoreLeft != null && h.scoreRight != null
                 return (
                   <tr key={h.id}>
                     <td>{h.dateKey}</td>
                     <td>{mapName(h.mapId)}</td>
+                    <td className={scoreClass}>
+                      <div className="vt-score-cell-inner">
+                        {hasScore ? (
+                          <>
+                            {h.scoreLeft}
+                            <span className="vt-score-sep">:</span>
+                            {h.scoreRight}
+                          </>
+                        ) : (
+                          <span style={{ fontWeight: 600, opacity: 0.75 }}>—</span>
+                        )}
+                      </div>
+                    </td>
                     <td>
                       {h.kills} / {h.deaths} / {h.assists}
                     </td>

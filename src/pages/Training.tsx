@@ -8,10 +8,6 @@ import {
 } from '../db/database'
 import { TrainingCharts, trainingInsights } from '../components/TrainingCharts'
 
-function todayKey() {
-  return dateKeyFromTs(Date.now())
-}
-
 export function Training() {
   const [entries, setEntries] = useState<TrainingEntry[]>([])
   const [filterFrom, setFilterFrom] = useState('')
